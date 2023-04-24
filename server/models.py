@@ -5,56 +5,88 @@ from sqlalchemy.orm import validates
 from sqlalchemy.ext.associationproxy import association_proxy
 from config import *
 
-db = SQLAlchemy()
+class User(db.Model, SerializerMixin):
+    __tablename__ = 'users'
 
-class User(db.Model):
-    id = Column(Integer, primary_key=True)
-    username = Column(String, nullable=False, unique=True)
-    email = Column(String, nullable=False, unique=True)
-    password = Column(String, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, nullable=False, unique=True)
+    email = db.Column(db.String, nullable=False, unique=True)
+    password = db.Column(db.String, nullable=False)
 
+    subtopic_preferences = db.relationship('UserSubtopicPreference', back_populates='user')
 
-    subtopic_preferences = relationship('UserSubtopicPreference', backref='user')
+    serialize_only = ('id', 'username', 'email')
 
-class Topic(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+class Topic(db.Model, SerializerMixin):
+    __tablename__ = 'topics'
 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
 
-    subtopics = relationship('Subtopic', backref='topic')
+    subtopics = db.relationship('Subtopic', back_populates='topic')
 
-class Subtopic(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    topic_id = Column(Integer, ForeignKey('topic.id'))
+    serialize_only = ('id', 'name', 'subtopics')
 
+class Subtopic(db.Model, SerializerMixin):
+    __tablename__ = 'subtopics'
 
-    resources = relationship('Resource', backref='subtopic')
-    user_preferences = relationship('UserSubtopicPreference', backref='subtopic')
-    candidate_subtopics = relationship('CandidateSubtopic', backref='subtopic')
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
 
-class Resource(db.Model):
-    id = Column(Integer, primary_key=True)
-    type = Column(String, nullable=False)
-    title = Column(String, nullable=False)
-    url = Column(String, nullable=False)
-    subtopic_id = Column(Integer, ForeignKey('subtopic.id'))
+    topic = db.relationship('Topic', back_populates='subtopics')
+    resources = db.relationship('Resource', back_populates='subtopic')
+    user_preferences = db.relationship('UserSubtopicPreference', back_populates='subtopic')
+    candidate_subtopics = db.relationship('CandidateSubtopic', back_populates='subtopic')
 
-class Candidate(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    image_url = Column(String)
+    serialize_only = ('id', 'name', 'topic_id')
 
-    
-    candidate_subtopics = relationship('CandidateSubtopic', backref='candidate')
+class Resource(db.Model, SerializerMixin):
+    __tablename__ = 'resources'
 
-class CandidateSubtopic(db.Model):
-    id = Column(Integer, primary_key=True)
-    candidate_id = Column(Integer, ForeignKey('candidate.id'))
-    subtopic_id = Column(Integer, ForeignKey('subtopic.id'))
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    url = db.Column(db.String, nullable=False)
+    subtopic_id = db.Column(db.Integer, db.ForeignKey('subtopics.id'))
 
-class UserSubtopicPreference(db.Model):
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
-    subtopic_id = Column(Integer, ForeignKey('subtopic.id'))
-    priority = Column(Integer, nullable=False)
+    subtopic = db.relationship('Subtopic', back_populates='resources')
+
+    serialize_only = ('id', 'type', 'title', 'url', 'subtopic_id')
+
+class Candidate(db.Model, SerializerMixin):
+    __tablename__ = 'candidates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    image_url = db.Column(db.String)
+
+    candidate_subtopics = db.relationship('CandidateSubtopic', back_populates='candidate')
+
+    serialize_only = ('id', 'name', 'image_url')
+
+class CandidateSubtopic(db.Model, SerializerMixin):
+    __tablename__ = 'candidate_subtopics'
+
+    id = db.Column(db.Integer, primary_key=True)
+    candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
+    subtopic_id = db.Column(db.Integer, db.ForeignKey('subtopics.id'))
+
+    candidate = db.relationship('Candidate', back_populates='candidate_subtopics')
+    subtopic = db.relationship('Subtopic', back_populates='candidate_subtopics')
+
+    serialize_only = ('id', 'candidate_id', 'subtopic_id')
+
+class UserSubtopicPreference(db.Model, SerializerMixin):
+    __tablename__ = 'subtopic_preferences'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    subtopic_id = db.Column(db.Integer, db.ForeignKey('subtopics.id'))
+    priority = db.Column(db.Integer, nullable=False)
+
+    user = db.relationship('User', back_populates='subtopic_preferences')
+    subtopic = db.relationship('Subtopic', back_populates='user_preferences')
+
+    serialize_only = ('id', 'user_id', 'subtopic_id', 'priority')
+
