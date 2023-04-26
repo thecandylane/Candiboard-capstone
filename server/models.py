@@ -4,14 +4,20 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.associationproxy import association_proxy
 from config import *
+from uuid import uuid4
+
+def get_uuid():
+    return uuid4().hex
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
+    public_id = db.Column(db.String(36), unique=True, default=get_uuid, nullable=True)
     username = db.Column(db.String, nullable=False, unique=True)
     email = db.Column(db.String, nullable=False, unique=True)
     password = db.Column(db.String, nullable=False)
+    admin = db.Column(db.Boolean, nullable=False)
 
     subtopic_preferences = db.relationship('UserSubtopicPreference', back_populates='user')
 

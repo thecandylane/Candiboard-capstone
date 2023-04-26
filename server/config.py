@@ -21,4 +21,6 @@ class ApplicationConfig:
     SQLALCHEMY_ECHO = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
 
+    JWT_SECRET_KEY = 'asdiofnasfj84r93nfwojdifnn8nwehfghsdahf87ry34rhqkh'
+
 

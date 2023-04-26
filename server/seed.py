@@ -42,7 +42,8 @@ with app.app_context():
         username = fake.user_name()
         email = fake.email()
         password = fake.password()
-        user = User(username=username, email=email, password=password)
+        admin = fake.pybool()
+        user = User(username=username, email=email, password=password, admin=admin)
         db.session.add(user)
         users.append(user)
 

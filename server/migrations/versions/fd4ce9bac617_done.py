@@ -1,8 +1,8 @@
-"""new db
+"""done
 
-Revision ID: 2152bb434358
+Revision ID: fd4ce9bac617
 Revises: 
-Create Date: 2023-04-24 16:52:54.810531
+Create Date: 2023-04-25 17:55:12.461769
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2152bb434358'
+revision = 'fd4ce9bac617'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,11 +31,14 @@ def upgrade():
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('public_id', sa.String(length=36), nullable=True),
     sa.Column('username', sa.String(), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
+    sa.Column('admin', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('public_id'),
     sa.UniqueConstraint('username')
     )
     op.create_table('subtopics',
