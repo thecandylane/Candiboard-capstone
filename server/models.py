@@ -21,7 +21,7 @@ class User(db.Model, SerializerMixin):
 
     subtopic_preferences = db.relationship('UserSubtopicPreference', back_populates='user')
 
-    serialize_only = ('id', 'username', 'email')
+    serialize_only = ('id', 'username', 'email', 'admin', 'subtopic_preferences') 
 
 class Topic(db.Model, SerializerMixin):
     __tablename__ = 'topics'

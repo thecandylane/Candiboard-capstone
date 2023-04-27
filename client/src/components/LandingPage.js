@@ -1,49 +1,60 @@
-import { useState } from "react"
-import Login from "./Login"
+import { useContext, useEffect, useState } from "react"
+import Login from "../pages/Login"
+import { useNavigate } from "react-router-dom";
+import UserContext from "../context/UserContext";
+// import useUser from "../hooks/useUser";
 
 
 const LandingPage = () => {
-    const [email ,setEmail] = useState('');
-    const [password ,setPassword] = useState('');
-    // const token = localStorage.getItem("token");
+    // const { user, isLoading} = useUser()
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate()
+    const { user, login } = useContext(UserContext)
+    useEffect(() => {
+      if(user){
+        navigate('/home')
 
-    function handleLogin(e){
-      e.preventDefault()
-      fetch('/token', {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body: JSON.stringify({
-          "email":email,
-          "password":password
-        })
-      })
-      .then(r => {
-        if (r.status === 200) return r.json()
-        else alert('there has been error');
-      })
-      .then(data => {
-        console.log("from the backend", data)
-        localStorage.setItem("token", data.access_token)
-      })
-      .catch(err => console.error('ERRORRRR', err))
+      }
+    },[])
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      try {
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          login(data.user);
+          navigate("/home");
+        } else {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error logging in");
+      }
     }
     
-
+    // if (isLoading){
+    //   return <div>Loading...</div>
+    // }
+    // if (user){
+    //   console.log(user)
+    // }
 
     return (
         <div>
           <h1 class='text-center'>Welcome to Candiboard</h1>
             <h2 class='text-center'>please Log in or Sign up for a free account!</h2>
             <Login setEmail={setEmail} email={email} password={password} setPassword={setPassword} handleLogin={handleLogin}/>
-            {/* {token && token!='' && token!=undefined ?
-            
-            <div>hello</div>
-          :
-          
-          
-          } */}
         </div>
     )
 }

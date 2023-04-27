@@ -20,7 +20,7 @@ from functools import wraps
 
 app = Flask(__name__)
 
-CORS(app)
+CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
 app.config.from_object(ApplicationConfig)
 # app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
 jwt = JWTManager(app)
@@ -56,25 +56,57 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
     jti = jwt_payload["jti"]
     return jti in BLACKLIST
 
+#remember to fetch again when wanting to look at users subtopic_preferences, shit fuckin w me
+@app.route('/whoami', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
 
+    # if user:
+    #     access_token = request.cookies.get('access_token')
+    #     if access_token:
+    #         return jsonify({
+    #             'user': user.to_dict(),
+    #             'access_token': access_token
+    #         }), 200
+    #     return jsonify({'message':'fuck nig'})
+    # else:
+    #     return jsonify({"message": "User not found", "user_id": user_id}), 422
+    if user:
+        return jsonify({
+            'user': user.to_dict(),
+            }), 200
+    else:
+        return jsonify({"message": "User not found", "user_id": user_id}), 422
+
+
+
+'''
+FOR EMAIL
+'''
 @app.route('/login', methods=["POST"])
 def login():
-    auth = request.authorization
-    if not auth or not auth.username or not auth.password:
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
         return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
-    user = User.query.filter_by(username=auth.username).first()
+    user = User.query.filter_by(email=email).first()
 
     if not user:
         return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
-    if check_password_hash(user.password, auth.password):
-        # access_token = create_access_token(identity=user.public_id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
-        access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
-        '''why ?
-        '''
-
-        return jsonify({'token' : access_token})
+    if check_password_hash(user.password, password):
+        access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1), additional_claims={"is_admin": user.admin})
+        user_data = user.to_dict()
+        user_data['access_token'] = access_token
+        response = make_response(jsonify({'message': 'Logged in successfully', 'user': user_data}), 200)
+        response.set_cookie('access_token', access_token, httponly=True, samesite='Lax', secure=False)
+        return response
+        
     return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
 
@@ -83,12 +115,56 @@ def login():
 def logout():
     jti = get_jwt()["jti"]  # Get the unique identifier for the token
     BLACKLIST.add(jti)  # Add the token to the blacklist
-    return jsonify({"message": "Successfully logged out"}), 200
+    
+    response = make_response(jsonify({"message": "Successfully logged out"}), 200)
+    response.set_cookie('access_token', '', expires=0)  # Set the access_token to an empty string and expire it immediately
+
+    return response
+
+
+    '''
+    old whoami
+    '''
+# @app.route('/whoami', methods=['GET'])
+# @jwt_required()
+# def get_current_user():
+#     user_id = get_jwt_identity()
+#     print(user_id)
+#     user = User.query.get(user_id)
+
+#     if user:
+#         return jsonify(user.to_dict()), 200
+#     else:
+#         return jsonify({"message": "User not found", "user_id": user_id}), 422
+'''
+FOR USERNAME
+'''
+# @app.route('/login', methods=["POST"])
+# def login():
+#     auth = request.authorization
+#     if not auth or not auth.username or not auth.password:
+#         return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
+#     user = User.query.filter_by(username=auth.username).first()
+
+#     if not user:
+#         return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
+#     if check_password_hash(user.password, auth.password):
+#         # access_token = create_access_token(identity=user.public_id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
+#         access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
+#         '''why ?
+#         '''
+
+#         return jsonify({'token' : access_token})
+#     return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
+
 
 #Main model routes
 class Users(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         users = User.query.all()
         return [u.to_dict() for u in users], 200
@@ -445,6 +521,21 @@ class CandidateSubtopicById(RestfulResource):
 
 api.add_resource(CandidateSubtopicById, '/candidate-subtopics/<int:id>')
 
+def add_subtopic_preference(user_id, subtopic_id):
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return {"error": "User not found"}, 404
+
+    sp = UserSubtopicPreference(
+        user_id=user_id,
+        subtopic_id=subtopic_id,
+        priority=len(user.subtopic_preferences) + 1
+    )
+    db.session.add(sp)
+    db.session.commit()
+
+    return sp.to_dict(), 201
+
 class SubtopicPreferences(RestfulResource):
 
     @jwt_required()
@@ -453,22 +544,28 @@ class SubtopicPreferences(RestfulResource):
         return [sp.to_dict() for sp in sps], 200
 
     @jwt_required()
-    @admin_required
+    # @admin_required
+    # def post(self):
+    #     data = request.get_json()
+    #     try:
+    #         sp = UserSubtopicPreference(
+    #         user_id=data['user_id'],
+    #         subtopic_id=data['subtopic_id'],
+    #         priority=data['priority']
+    #         )
+    #         db.session.add(sp)
+    #         db.session.commit()
+    #     except Exception as e:
+    #         return make_response({
+    #             'errors':[e.__str__()]
+    #         }, 422)
+    #     return sp.to_dict(), 201
     def post(self):
+        print(request.get_json())
         data = request.get_json()
-        try:
-            sp = UserSubtopicPreference(
-            user_id=data['user_id'],
-            subtopic_id=data['subtopic_id'],
-            priority=data['priority']
-            )
-            db.session.add(sp)
-            db.session.commit()
-        except Exception as e:
-            return make_response({
-                'errors':[e.__str__()]
-            }, 422)
-        return sp.to_dict(), 201
+        user_id = data['user_id']
+        subtopic_id = data['subtopic_id']
+        return add_subtopic_preference(user_id, subtopic_id)
 
 api.add_resource(SubtopicPreferences, '/subtopic-preferences')
 
@@ -482,7 +579,7 @@ class SubtopicPreferenceById(RestfulResource):
         return sp.to_dict(), 200
 
     @jwt_required()
-    @admin_required
+    # @admin_required
     def patch(self, id):
         sp = UserSubtopicPreference.query.filter_by(id=id).first()
         if not sp:
@@ -495,7 +592,7 @@ class SubtopicPreferenceById(RestfulResource):
         return sp.to_dict(), 200
 
     @jwt_required()
-    @admin_required
+    # @admin_required
     def delete(self, id):
         sp = UserSubtopicPreference.query.filter_by(id=id).first()
         if not sp:
