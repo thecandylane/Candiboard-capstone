@@ -100,7 +100,9 @@ def login():
         return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
     if check_password_hash(user.password, password):
-        access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=1), additional_claims={"is_admin": user.admin})
+        access_token = create_access_token(identity=user.public_id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
+
+        # access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30 ), additional_claims={"is_admin": user.admin})
         user_data = user.to_dict()
         user_data['access_token'] = access_token
         response = make_response(jsonify({'message': 'Logged in successfully', 'user': user_data}), 200)
@@ -575,7 +577,7 @@ class SubtopicPreferenceById(RestfulResource):
     def get(self, id):
         sp = UserSubtopicPreference.query.filter_by(id=id).first()
         if not sp:
-            return {"error":"Candidate Subtopic not found"}, 404
+            return {"error":"Subtopic Preference not found"}, 404
         return sp.to_dict(), 200
 
     @jwt_required()

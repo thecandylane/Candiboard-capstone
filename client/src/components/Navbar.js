@@ -34,11 +34,22 @@ const Navbar = () => {
       }
 
     return (
-        <nav class="bg-slate-500">
-            <div class="flex items-center justify-between px-4 py-3">
+        <nav className="bg-slate-500">
+            <div className="flex items-center justify-between px-4 py-3">
                 <div className="mx-auto">
-                    <h1 onClick={() => navigate('/')} className="text-6xl text-center">Candiboard</h1>
+                    <h1 onClick={() => navigate('/')} className="text-6xl text-center text">Candiboard</h1>
                 </div>
+                {user?.admin ?
+                <button
+                onClick={() => navigate('/admin')}
+                className="bg-white text-slate-500 mx-2 px-4 py-2 rounded"
+                name="Admin"
+            >
+                Admin
+            </button>  
+                :
+                <></>
+                }
                 {user ? (
                     <button
                         onClick={handleLogout}

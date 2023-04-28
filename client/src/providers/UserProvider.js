@@ -20,7 +20,7 @@ const UserProvider = ({ children }) => {
       }
 
       
-
+        
     
     useEffect(() => {
         if (user && user.access_token){

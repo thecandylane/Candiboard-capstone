@@ -7,6 +7,7 @@ import './App.css'
 import Home from "./pages/Home";
 import useUser from "./hooks/useUser";
 import TopicView from "./pages/TopicView";
+import AdminPage from "./pages/AdminPage";
 
 const App = () => {
   const {user} = useUser()
@@ -21,6 +22,7 @@ const App = () => {
         <></>
         :
         <>
+        <Route path='/admin' element={<AdminPage />}/>
         <Route exact path="/home" element={<Home/>}/>
         <Route path='/topic/:id' element={<TopicView />}/>
         </>

@@ -8,6 +8,7 @@ const Home = () => {
     const { isLoading, user} = useUser()
     const {getAuthHeaders} = useContext(UserContext)
     const [topics, setTopics] = useState([])
+    // const [completedTopics, setCompletedTopics] = useState([])
     const navigate = useNavigate()
     console.log(user)
 
@@ -39,16 +40,16 @@ const Home = () => {
       }, [])
 
 
-      const location = useLocation();
-  useEffect(() => {
+    const location = useLocation();
+    useEffect(() => {
     if (location.pathname === "/home") {
       handleFetch();
     }
-  }, [location.pathname]);
+    }, [location.pathname]);
 
 
     // console.log(topics)
-
+    // console.log(completedTopics)
     const handleClick = (id, data) => {
         navigate(`/topic/${id}`, {state: {topic: data } })
     }
@@ -58,9 +59,17 @@ const Home = () => {
         return <div>Loading...</div>
     }
 
-    const topicsToRender = topics.map(t => {
-        return <Topic key={t.id} id={t.id} name={t.name} subtopics={t.subtopics} onClick={() => handleClick(t.id, t)}/>
-    })
+    const topicsToRender = (
+      <div className="grid grid-cols-5 gap-4">
+        {topics.map(t => {
+          return <Topic  key={t.id} id={t.id} name={t.name}
+          onClick={() => handleClick(t.id, t)}
+          // completed={completedTopics.includes(t.id, t)}
+          />}
+      )}
+
+      </div>
+    )
 
     return (
         <div>
@@ -69,7 +78,7 @@ const Home = () => {
                 <li>{user.username}</li>
                 <li>{user.email}</li>
                 <li>{user.admin}</li>
-                <li>{user.subtopics}</li>
+                {/* <li>{user.subtopics}</li> */}
             </ol>
             <div>
             {topics.length > 0 ? topicsToRender : 'No topics found'}
