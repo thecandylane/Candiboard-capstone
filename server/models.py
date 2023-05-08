@@ -23,6 +23,7 @@ class User(db.Model, SerializerMixin):
 
     serialize_only = ('id', 'username', 'email', 'admin', 'subtopic_preferences') 
 
+
 class Topic(db.Model, SerializerMixin):
     __tablename__ = 'topics'
 
@@ -39,13 +40,14 @@ class Subtopic(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
+    description = db.Column(db.String, nullable=False)
 
     topic = db.relationship('Topic', back_populates='subtopics')
     resources = db.relationship('Resource', back_populates='subtopic')
     user_preferences = db.relationship('UserSubtopicPreference', back_populates='subtopic')
     candidate_subtopics = db.relationship('CandidateSubtopic', back_populates='subtopic')
 
-    serialize_only = ('id', 'name', 'topic_id')
+    serialize_only = ('id', 'name', 'topic_id', 'description','resources')
 
 class Resource(db.Model, SerializerMixin):
     __tablename__ = 'resources'
@@ -69,7 +71,7 @@ class Candidate(db.Model, SerializerMixin):
 
     candidate_subtopics = db.relationship('CandidateSubtopic', back_populates='candidate')
 
-    serialize_only = ('id', 'name', 'image_url')
+    serialize_only = ('id', 'name', 'image_url', 'candidate_subtopics')
 
 class CandidateSubtopic(db.Model, SerializerMixin):
     __tablename__ = 'candidate_subtopics'
@@ -77,22 +79,23 @@ class CandidateSubtopic(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
     subtopic_id = db.Column(db.Integer, db.ForeignKey('subtopics.id'))
+    weight = db.Column(db.Integer, nullable=False)
 
     candidate = db.relationship('Candidate', back_populates='candidate_subtopics')
     subtopic = db.relationship('Subtopic', back_populates='candidate_subtopics')
 
-    serialize_only = ('id', 'candidate_id', 'subtopic_id')
+    serialize_only = ('id', 'candidate_id', 'subtopic_id', 'weight')
 
 class UserSubtopicPreference(db.Model, SerializerMixin):
     __tablename__ = 'subtopic_preferences'
-
+ 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     subtopic_id = db.Column(db.Integer, db.ForeignKey('subtopics.id'))
-    priority = db.Column(db.Integer, nullable=False)
+    priority = db.Column(db.Integer, nullable=False, default=1)
 
     user = db.relationship('User', back_populates='subtopic_preferences')
     subtopic = db.relationship('Subtopic', back_populates='user_preferences')
 
-    serialize_only = ('id', 'user_id', 'subtopic_id', 'priority')
+    serialize_only = ('id', 'user_id', 'subtopic_id', 'priority', 'subtopic')
 

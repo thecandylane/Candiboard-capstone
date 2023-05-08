@@ -5,9 +5,10 @@ import UserContext from '../context/UserContext';
 const UserProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem('user');
-        return storedUser ? JSON.parse(storedUser) : null;
-    });
+      const storedUser = localStorage.getItem('user');
+      return storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
+  });
+  
 
     function parseJwt(token) {
         try {
@@ -53,12 +54,12 @@ const UserProvider = ({ children }) => {
         }
       };
       
-      
 
 
     const login = (newUser) => {
         // setUser(() => JSON.stringify(newUser))
         setUser(newUser)
+        console.log(newUser)
         localStorage.setItem('user', JSON.stringify(newUser))
     }
 
@@ -67,7 +68,7 @@ const UserProvider = ({ children }) => {
     }
     
     return (
-        <UserContext.Provider value={{ user, isLoading, login, getAuthHeaders, logout }}>
+        <UserContext.Provider value={{ setUser, user, isLoading, login, getAuthHeaders, logout }}>
             {children}
         </UserContext.Provider>
     );

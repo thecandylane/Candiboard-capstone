@@ -1,94 +1,74 @@
+
 from faker import Faker
 from datetime import datetime
-# from config import db, ApplicationConfig
 from models import User, Topic, Subtopic, Resource, Candidate, CandidateSubtopic, UserSubtopicPreference
 from app import app
 from config import db
+from seedData import topics_data, candidates_data
+import random
 
-
-# app = Flask(__name__)
-# app.config.from_object(ApplicationConfig)
 if __name__ == '__main__':
     fake = Faker()
 
 with app.app_context():
+    db.session.query(User).delete()
     db.session.query(UserSubtopicPreference).delete()
     db.session.query(CandidateSubtopic).delete()
-    db.session.query(Resource).delete()
     db.session.query(Candidate).delete()
-    db.session.query(User).delete()
+    db.session.query(Resource).delete()
     db.session.query(Subtopic).delete()
     db.session.query(Topic).delete()
-    db.session.commit()
+
+    # Create topics and subtopics
+    TD = topics_data
 
     topics = []
     subtopics = []
 
-    for i in range(5):
-        topic_name = fake.word()
+    for topic_name, subtopic_list in TD.items():
         topic = Topic(name=topic_name)
         db.session.add(topic)
         topics.append(topic)
 
-        for j in range(3):
-            subtopic_name = fake.word()
-            subtopic = Subtopic(name=subtopic_name, topic=topic)
+        for subtopic_data in subtopic_list:
+            subtopic = Subtopic(name=subtopic_data['name'], description=subtopic_data['description'], topic=topic)
             db.session.add(subtopic)
             subtopics.append(subtopic)
 
-# create users
-    users = []
-    for i in range(10):
-        username = fake.user_name()
-        email = fake.email()
-        password = fake.password()
-        admin = fake.pybool()
-        user = User(username=username, email=email, password=password, admin=admin)
-        db.session.add(user)
-        users.append(user)
+            for resource_data in subtopic_data['resources']:
+                resource = Resource(type=resource_data['type'], title=resource_data['title'],
+                                    url=resource_data['url'], subtopic=subtopic)
+                db.session.add(resource)
 
-# create resources
-    resources = []
-    for i in range(20):
-        resource_type = fake.random_element(elements=('article', 'video', 'podcast'))
-        resource_title = fake.sentence()
-        resource_url = fake.url()
-        subtopic = fake.random_element(elements=subtopics)
-        resource = Resource(type=resource_type, title=resource_title, url=resource_url, subtopic=subtopic)
-        db.session.add(resource)
-        resources.append(resource)
 
-# create candidates and candidate subtopics
+
+    CD = candidates_data
+
     candidates = []
-    candidate_subtopics = []
 
-    for i in range(5):
-        name = fake.name()
-        image_url = fake.url()
-        candidate = Candidate(name=name, image_url=image_url)
+    for candidate_data in CD:
+        candidate = Candidate(name=candidate_data['name'], image_url=candidate_data['image_url'])
         db.session.add(candidate)
         candidates.append(candidate)
 
-        for j in range(3):
-            subtopic = fake.random_element(elements=subtopics)
-            candidate_subtopic = CandidateSubtopic(candidate=candidate, subtopic=subtopic)
+        for subtopic_name, weight in candidate_data['subtopics'].items():
+            subtopic = next(s for s in subtopics if s.name == subtopic_name)
+            candidate_subtopic = CandidateSubtopic(candidate=candidate, subtopic=subtopic, weight=weight)
             db.session.add(candidate_subtopic)
-            candidate_subtopics.append(candidate_subtopic)
+    
+    num_users = 10
+    max_preferences_per_user = 10
 
-# create user subtopic preferences
-    user_subtopic_preferences = []
-    for user in users:
-        for subtopic in subtopics:
-            priority = fake.random_int(min=1, max=5)
-            user_subtopic_preference = UserSubtopicPreference(user=user, subtopic=subtopic, priority=priority)
+    for _ in range(num_users):
+        user = User(username=fake.user_name(), email=fake.email(), password=fake.password(), admin=False)
+        db.session.add(user)
+
+        random_subtopics = random.sample(subtopics, min(max_preferences_per_user, len(subtopics)))
+
+        for index, subtopic in enumerate(random_subtopics):
+            user_subtopic_preference = UserSubtopicPreference(user=user, subtopic=subtopic, priority=index + 1)
             db.session.add(user_subtopic_preference)
-            user_subtopic_preferences.append(user_subtopic_preference)
 
     db.session.commit()
-    # delete previous data
-
-
-# create topics and subtopics
-
-
-
+    print("Database seeded successfully!")
+    

@@ -1,8 +1,8 @@
-"""done
+"""hopefully works
 
-Revision ID: fd4ce9bac617
+Revision ID: 937e8bc2da83
 Revises: 
-Create Date: 2023-04-25 17:55:12.461769
+Create Date: 2023-05-04 22:07:51.473033
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fd4ce9bac617'
+revision = '937e8bc2da83'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -45,6 +45,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('topic_id', sa.Integer(), nullable=True),
+    sa.Column('description', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['topic_id'], ['topics.id'], name=op.f('fk_subtopics_topic_id_topics')),
     sa.PrimaryKeyConstraint('id')
     )
@@ -52,6 +53,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('candidate_id', sa.Integer(), nullable=True),
     sa.Column('subtopic_id', sa.Integer(), nullable=True),
+    sa.Column('weight', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['candidate_id'], ['candidates.id'], name=op.f('fk_candidate_subtopics_candidate_id_candidates')),
     sa.ForeignKeyConstraint(['subtopic_id'], ['subtopics.id'], name=op.f('fk_candidate_subtopics_subtopic_id_subtopics')),
     sa.PrimaryKeyConstraint('id')

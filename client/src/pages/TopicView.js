@@ -2,10 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import SubTopic from "../components/SubTopic"
 import { useState, useEffect } from "react"
 
-const TopicView = () => {
-    // const { chosen, setChosen } = useState(false)
-    
-
+const TopicView = ({}) => {
     const location = useLocation()
     const navigate = useNavigate()
 
@@ -15,30 +12,22 @@ const TopicView = () => {
         }
       }, [location.state, navigate]);
     
-      // Check if the data is available before using it
-      const data = location.state?.topic;
-    //   const setCompletedTopics = location.state?.setCompletedTopic;
-
-    // const data = location.state.topic
-    // const setCompletedTopics = location.state.setCompletedTopics
+    const data = location.state?.topic;
     console.log(data)
+    
     const subtopicsToRender = data ? 
      data.subtopics.map((st) => {
         return (
-          <SubTopic
-            key={st.id}
-            id={st.id}
-            name={st.name}
-            // setChosen={() => {
-            //   setChosen(true);
-            //   setCompletedTopics((prev) => {
-            //     if (!prev.includes(data.id)) {
-            //       return [...prev, data.id];
-            //     }
-            //     return prev;
-            //   });
-            // }}
-          />
+          <div className="flex flex-row">
+
+            <SubTopic
+              selectedId={data.id}
+              key={st.id}
+              id={st.id}
+              name={st.name}
+              // selected={selected}
+            />
+          </div>
         );
       })
       :
@@ -52,12 +41,14 @@ const TopicView = () => {
 
     return (
         <div>
-            <h1>Selected Topic: {data.name}</h1>
+            <h1>Selected Topic: {data ? data.name : "Loading..."}</h1>
             <button className=" text-blue-500" onClick={navigateToHome}>Back to Home</button>
             <h2>
                 Choose a subtopic: 
             </h2>
-            {subtopicsToRender}
+            <div className="flex flex-wrap justify-center">
+              {subtopicsToRender}
+            </div>
         </div>
     )
 }

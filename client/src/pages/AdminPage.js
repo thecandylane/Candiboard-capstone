@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../context/UserContext";
 
@@ -6,33 +6,62 @@ const AdminPage = () => {
     const navigate = useNavigate();
     const [activeDiv, setActiveDiv] = useState(null);
     const [adminData, setAdminData] = useState([])
-    const {getAuthHeaders} = useContext(UserContext)
-
+    const [loading, setLoading] = useState(false);
+    const { getAuthHeaders, setUser, user } = useContext(UserContext)
 
     const style = "bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700"
-    console.log(activeDiv)
-    const handleButtonClick = async (divKey) => {
-        setActiveDiv(activeDiv === divKey ? null : divKey);
-        const headers = await getAuthHeaders()
-        if (activeDiv !== divKey) {
-            const endpoint = divKey;
-            
-            fetch(`/${endpoint}`,{
+    useEffect(() => {
+        const fetchData = async() => {
+            const headers = await getAuthHeaders()
+            console.log(headers)
+            fetch('/whoami', {
                 headers:headers
             })
             .then(r => {
-                if (r.ok){
-                    return r.json() 
-                }else{
+                if (r.ok) {
+                    return r.json()
+                } else {
                     console.error('sum hapn')
                 }
             })
             .then(data => {
-                setAdminData(data)
-                console.log(data)
+                setUser(data.user)
+                console.log(user)
             })
         }
+        fetchData()
+    }, [])
+
+
+    console.log(activeDiv)
+    const handleButtonClick = async (divKey) => {
+        const headers = getAuthHeaders()
+        setLoading(true);
+        setActiveDiv(activeDiv === divKey ? null : divKey);
+        if (activeDiv !== divKey) {
+            const endpoint = divKey;
+
+            fetch(`/${endpoint}`, {
+                headers: await headers
+            })
+                .then(r => {
+                    if (r.ok) {
+                        return r.json()
+                    } else {
+                        console.error('sum hapn')
+                    }
+                })
+                .then(data => {
+                    setAdminData(data)
+                    setLoading(false);
+                    console.log(data)
+                })
+        } else {
+            setLoading(false);
+        }
     }
+
+
 
     return (
         <div className="flex flex-col items-center space-y-4">
@@ -77,121 +106,96 @@ const AdminPage = () => {
                     Back to Home
                 </button>
             </div>
-            {activeDiv === "users" && (
-                 <div>
-                 <table>
-                     <thead>
-                         <tr>
-                             <th>ID</th>
-                             <th>Username</th>
-                             <th>Email</th>
-                             <th>Admin</th>
-                         </tr>
-                     </thead>
-                     <tbody>
-                         {adminData.map((user) => (
-                             <tr key={user.id}>
-                                 <td>{user.id}</td>
-                                 <td>{user.username}</td>
-                                 <td>{user.email}</td>
-                                 <td>{user.admin ? "Yes" : "No"}</td>
-                             </tr>
-                         ))}
-                     </tbody>
-                 </table>
-             </div>
-            )}
-            {activeDiv === "candidates" && (
-                <div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Image URL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {adminData.map((candidate) => (
-                            <tr key={candidate.id}>
-                                <td>{candidate.id}</td>
-                                <td>{candidate.name}</td>
-                                <td>{candidate.image_url}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            )}
-            {activeDiv === "topics" && (
-                 <div>
-                 <table>
-                     <thead>
-                         <tr>
-                             <th>ID</th>
-                             <th>Name</th>
-                         </tr>
-                     </thead>
-                     <tbody>
-                         {adminData.map((topic) => (
-                             <tr key={topic.id}>
-                                 <td>{topic.id}</td>
-                                 <td>{topic.name}</td>
-                             </tr>
-                         ))}
-                     </tbody>
-                 </table>
-             </div>
-            )}
-            {activeDiv === "subtopics" && (
-                <div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Topic ID</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {adminData.map((subtopic) => (
-                            <tr key={subtopic.id}>
-                                <td>{subtopic.id}</td>
-                                <td>{subtopic.name}</td>
-                                <td>{subtopic.topic_id}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        )}
-            {activeDiv === "resources" && (
-                <div>
-                    <table>
-                        <thead>
+            {loading && <div>Loading...</div>}
+            {activeDiv !== null && !loading && (
+                <div className="overflow-x-auto w-full mt-8">
+                    <table className="w-full table-auto text-left border-collapse border border-gray-300">
+                        <thead className="bg-gray-100">
                             <tr>
-                                <th>Type</th>
-                                <th>Title</th>
-                                <th>URL</th>
-                                <th>Subtopic ID</th>
+                                {activeDiv === "users" && (
+                                    <>
+                                        <th className="border border-gray-300 px-4 py-2">ID</th>
+                                        <th className="border border-gray-300 px-4 py-2">Username</th>
+                                        <th className="border border-gray-300 px-4 py-2">Email</th>
+                                        <th className="border border-gray-300 px-4 py-2">Admin</th>
+                                    </>
+                                )}
+                                {activeDiv === "candidates" && (
+                                    <>
+                                        <th className="border border-gray-300 px-4 py-2">ID</th>
+                                        <th className="border border-gray-300 px-4 py-2">Name</th>
+                                        <th className="border border-gray-300 px-4 py-2">Image URL</th>
+                                    </>
+                                )}
+                                {activeDiv === "topics" && (
+                                    <>
+                                        <th className="border border-gray-300 px-4 py-2">ID</th>
+                                        <th className="border border-gray-300 px-4 py-2">Name</th>
+                                    </>
+                                )}
+                                {activeDiv === "subtopics" && (
+                                    <>
+                                        <th className="border border-gray-300 px-4 py-2">ID</th>
+                                        <th className="border border-gray-300 px-4 py-2">Name</th>
+                                        <th className="border border-gray-300 px-4 py-2">Topic ID</th>
+                                    </>
+                                )}
+                                {activeDiv === "resources" && (
+                                    <>
+                                        <th className="border border-gray-300 px-4 py-2">ID</th>
+                                        <th className="border border-gray-300 px-4 py-2">Type</th>
+                                        <th className="border border-gray-300 px-4 py-2">Title</th>
+                                        <th className="border border-gray-300 px-4 py-2">URL</th>
+                                        <th className="border border-gray-300 px-4 py-2">Subtopic ID</th>
+                                    </>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
-                            {adminData.map((resource) => (
-                                <tr key={resource.id}>
-                                    <td>{resource.type}</td>
-                                    <td>{resource.title}</td>
-                                    <td>{resource.url}</td>
-                                    <td>{resource.subtopic_id}</td>
+                            {adminData.map((item) => (
+                                <tr key={item.id} className="hover:bg-gray-200 focus:bg-gray-200">
+                                    <td className="border border-gray-300 px-4 py-2">{item.id}</td>
+                                    {activeDiv === "users" && (
+                                        <>
+                                            <td className="border border-gray-300 px-4 py-2">{item.username}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{item.email}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{item.admin ? "Yes" : "No"}</td>
+                                        </>
+                                    )}
+                                    {activeDiv === "candidates" && (
+                                        <>
+                                            <td className="border border-gray-300 px-4 py-2">{item.name}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{item.image_url}</td>
+                                        </>
+                                    )}
+                                    {activeDiv === "topics" && (
+                                        <>
+                                            <td className="border border-gray-300 px-4 py-2">{item.name}</td>
+                                        </>
+                                    )}
+                                    {activeDiv === "subtopics" && (
+                                        <>
+                                            <td className="border border-gray-300 px-4 py-2">{item.name}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{item.topic_id}</td>
+                                        </>
+                                    )}
+                                    {activeDiv === "resources" && (
+                                        <>
+                                            <td className="border border-gray-300 px-4 py-2">{item.type}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{item.title}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{item.url}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{item.subtopic_id}</td>
+                                        </>
+                                    )}
                                 </tr>
-                                )
-                            )}
+                            ))}
                         </tbody>
                     </table>
                 </div>
             )}
         </div>
     )
+
 }
 
 export default AdminPage;

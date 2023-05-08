@@ -35,7 +35,7 @@ const LandingPage = () => {
           navigate("/home");
         } else {
           const data = await response.json();
-          throw new Error(data.message);
+          throw new Error(data.message);  
         }
       } catch (error) {
         console.error(error);

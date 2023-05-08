@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import useUser from "./hooks/useUser";
 import TopicView from "./pages/TopicView";
 import AdminPage from "./pages/AdminPage";
+import SubtopicGrading from "./pages/Grading";
+import MatchingPage from "./pages/CandidateMatchingPage";
 
 const App = () => {
   const {user} = useUser()
@@ -25,6 +27,8 @@ const App = () => {
         <Route path='/admin' element={<AdminPage />}/>
         <Route exact path="/home" element={<Home/>}/>
         <Route path='/topic/:id' element={<TopicView />}/>
+        <Route path='/grading'element={<SubtopicGrading />} />
+        <Route path="/matching-page" element={<MatchingPage />} />
         </>
          }
       </Routes>

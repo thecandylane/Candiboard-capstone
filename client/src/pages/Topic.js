@@ -1,20 +1,23 @@
+import React from "react";
 
+function Topic({ id, name, onClick, chosen }) {
+  const topicBaseClass = "bg-green-500 w-40 h-40 p-3 m-2 text-center rounded-md shadow-md transform transition duration-200 hover:bg-blue-600 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50";
+  const topicCompletedClass = "bg-blue-300 w-40 h-40 p-3 m-2 text-center rounded-md shadow-md transform transition ";
 
-const Topic = ({ id, name, onClick, completed }) => {
-    const baseClass =
-      "bg-green-500 w-48 h-48 p-4 m-2 text-center rounded-md shadow-md transform transition duration-200 hover:bg-green-600 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50";
-    const completedClass = "bg-green-300";
-  
-    return (
-      <div
-        className={`${baseClass} ${completed ? completedClass : ""}`}
-        tabIndex="0"
-        onClick={() => onClick(id)}
-      >
-        <h3 className="text-white font-semibold">{name}</h3>
-        {completed && <span className="text-white font-semibold">✓</span>}
-      </div>
-    );
+  const handleClick = () => {
+    if(!chosen){
+      onClick(id);
+    }
   };
-  
-  export default Topic;
+
+  return (
+    <div
+      className={`${chosen ? topicCompletedClass : topicBaseClass}`}
+      onClick={handleClick}
+    >
+      <h1>{name}</h1>
+    </div>
+  );
+}
+
+export default Topic;

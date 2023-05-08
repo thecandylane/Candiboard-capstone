@@ -57,29 +57,32 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
     return jti in BLACKLIST
 
 #remember to fetch again when wanting to look at users subtopic_preferences, shit fuckin w me
+# @app.route('/whoami', methods=['GET'])
+# @jwt_required()
+# def get_current_user():
+#     user_id = get_jwt_identity()
+#     user = User.query.get(user_id)
+
+#     if user:
+#         return jsonify({
+#             'user': user.to_dict(),
+#             }), 200
+#     else:
+#         return jsonify({"message": "User not found", "user_id": user_id}), 422
 @app.route('/whoami', methods=['GET'])
 @jwt_required()
 def get_current_user():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
 
-    # if user:
-    #     access_token = request.cookies.get('access_token')
-    #     if access_token:
-    #         return jsonify({
-    #             'user': user.to_dict(),
-    #             'access_token': access_token
-    #         }), 200
-    #     return jsonify({'message':'fuck nig'})
-    # else:
-    #     return jsonify({"message": "User not found", "user_id": user_id}), 422
     if user:
-        return jsonify({
-            'user': user.to_dict(),
-            }), 200
+        access_token = request.cookies.get('access_token')
+        user_data = user.to_dict()
+        if access_token:
+            user_data['access_token'] = access_token
+        return jsonify({'user': user_data}), 200
     else:
         return jsonify({"message": "User not found", "user_id": user_id}), 422
-
 
 
 '''
@@ -100,9 +103,9 @@ def login():
         return make_response('could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
     if check_password_hash(user.password, password):
-        access_token = create_access_token(identity=user.public_id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
+        # access_token = create_access_token(identity=user.public_id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
 
-        # access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30 ), additional_claims={"is_admin": user.admin})
+        access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30 ), additional_claims={"is_admin": user.admin})
         user_data = user.to_dict()
         user_data['access_token'] = access_token
         response = make_response(jsonify({'message': 'Logged in successfully', 'user': user_data}), 200)
@@ -197,15 +200,15 @@ api.add_resource(Users, '/users')
 
 class UserById(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, id):
         user = User.query.filter_by(id=id).first()
         if not user:
             return {"error":"User not found"}, 404
         return user.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def patch(self, id):
         user = User.query.filter_by(id=id).first()
         if not user:
@@ -217,8 +220,8 @@ class UserById(RestfulResource):
         db.session.commit()
         return user.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def delete(self, id):
         user = User.query.filter_by(id=id).first()
         if not user:
@@ -231,13 +234,13 @@ api.add_resource(UserById, '/users/<int:id>')
     
 class Topics(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         topics = Topic.query.all()
         return [t.to_dict() for t in topics], 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def post(self):
         data = request.get_json()
         try:
@@ -254,15 +257,15 @@ api.add_resource(Topics, '/topics')
 
 class TopicById(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, id):
         topic = Topic.query.filter_by(id=id).first()
         if not topic:
             return {"error":"Topic not found"}, 404
         return topic.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def patch(self, id):
         topic = Topic.query.filter_by(id=id).first()
         if not topic:
@@ -274,8 +277,8 @@ class TopicById(RestfulResource):
         db.session.commit()
         return topic.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def delete(self, id):
         topic = Topic.query.filter_by(id=id).first()
         if not topic:
@@ -288,21 +291,23 @@ api.add_resource(TopicById, '/topics/<int:id>')
 
 class Subtopics(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         sts = Subtopic.query.all()
         if not sts:
             return {"error":"Subtopic not found"}
         return [s.to_dict() for s in sts], 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def post(self):
         data = request.get_json()
         try:
             s = Subtopic(
             name=data['name'],
-            topic_id=data['topic_id'])
+            topic_id=data['topic_id'],
+            description=data['description']
+            )
             db.session.add(s)
             db.session.commit()
         except Exception as e:
@@ -314,15 +319,15 @@ api.add_resource(Subtopics, '/subtopics')
 
 class SubtopicById(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, id):
         st = Subtopic.query.filter_by(id=id).first()
         if not st:
             return {"error":"Subtopic not found"}, 404
         return st.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def patch(self, id):
         st = Subtopic.query.filter_by(id=id).first()
         if not st:
@@ -334,8 +339,8 @@ class SubtopicById(RestfulResource):
         db.session.commit()
         return st.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def delete(self, id):
         st = Subtopic.query.filter_by(id=id).first()
         if not st:
@@ -348,15 +353,15 @@ api.add_resource(SubtopicById, '/subtopics/<int:id>')
 
 class Resources(RestfulResource):
     
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         rs = Resource.query.all()
         if not rs:
             return {"error":"Resource not found"}, 404
         return [r.to_dict() for r in rs], 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def post(self):
         data = request.get_json()
         try:
@@ -377,15 +382,15 @@ api.add_resource(Resources, '/resources')
 
 class ResourceById(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, id):
         r = Resource.query.filter_by(id=id).first()
         if not r:
             return {"error":"Resource not found"}, 404
         return r.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def patch(self, id):
         r = Resource.query.filter_by(id=id).first()
         if not r:
@@ -397,8 +402,8 @@ class ResourceById(RestfulResource):
         db.session.commit()
         return r.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def delete(self, id):
         r = Resource.query.filter_by(id=id).first()
         if not r:
@@ -411,13 +416,13 @@ api.add_resource(ResourceById, '/resources/<int:id>')
 
 class Candidates(RestfulResource):
     
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         cs = Candidate.query.all()
         return [c.to_dict() for c in cs], 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def post(self):
         data = request.get_json()
         try:
@@ -434,15 +439,15 @@ api.add_resource(Candidates, '/candidates')
 
 class CandidateById(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, id):
         c = Candidate.query.filter_by(id=id).first()
         if not c:
             return {"error":"Candidate not found"}, 404
         return c.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def patch(self, id):
         c = Candidate.query.filter_by(id=id).first()
         if not c:
@@ -454,8 +459,8 @@ class CandidateById(RestfulResource):
         db.session.commit()
         return c.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def delete(self, id):
         c = Candidate.query.filter_by(id=id).first()
         if not c:
@@ -468,13 +473,13 @@ api.add_resource(CandidateById, '/candidates/<int:id>')
 
 class CandidateSubtopics(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         c_sts = CandidateSubtopic.query.all()
         return [cs.to_dict() for cs in c_sts], 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def post(self):
         data = request.get_json()
         try:
@@ -491,15 +496,15 @@ api.add_resource(CandidateSubtopics, '/candidate-subtopics')
 
 class CandidateSubtopicById(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, id):
         cs = CandidateSubtopic.query.filter_by(id=id).first()
         if not cs:
             return {"error":"Subtopic Preference not found"}, 404
         return cs.to_dict(), 200
         
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def patch(self, id):
         cs = CandidateSubtopic.query.filter_by(id=id).first()
         if not cs:
@@ -511,8 +516,8 @@ class CandidateSubtopicById(RestfulResource):
         db.session.commit()
         return cs.to_dict(), 200
 
-    @jwt_required()
-    @admin_required
+    # @jwt_required()
+    # @admin_required
     def delete(self, id):
         cs = CandidateSubtopic.query.filter_by(id=id).first()
         if not cs:
@@ -540,12 +545,12 @@ def add_subtopic_preference(user_id, subtopic_id):
 
 class SubtopicPreferences(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         sps = UserSubtopicPreference.query.all()
         return [sp.to_dict() for sp in sps], 200
 
-    @jwt_required()
+    # @jwt_required()
     # @admin_required
     # def post(self):
     #     data = request.get_json()
@@ -575,7 +580,7 @@ class SubtopicPreferenceById(RestfulResource):
 
     @jwt_required()
     def get(self, id):
-        sp = UserSubtopicPreference.query.filter_by(id=id).first()
+        sp = UserSubtopicPreference.query.filter_by(subtopic_id=id).first()
         if not sp:
             return {"error":"Subtopic Preference not found"}, 404
         return sp.to_dict(), 200
@@ -588,14 +593,14 @@ class SubtopicPreferenceById(RestfulResource):
             return {"error":"Subtopic Preference not found"}, 404
         data = request.get_json()
         for key in data.keys():
-            setattr(sp, key, data[key])
+            setattr(sp, key, data[key]) 
         db.session.add(sp)
         db.session.commit()
         return sp.to_dict(), 200
 
     @jwt_required()
     # @admin_required
-    def delete(self, id):
+    def delete(self, id):   
         sp = UserSubtopicPreference.query.filter_by(id=id).first()
         if not sp:
             return {"error":"Subtopic Preference not found"}, 404
@@ -604,6 +609,86 @@ class SubtopicPreferenceById(RestfulResource):
         return {'':''}, 204
 api.add_resource(SubtopicPreferenceById, '/subtopic-preferences/<int:id>')
 
+
+"""
+mr poopy butthole
+"""
+
+class SubtopicsByUserId(RestfulResource):
+    # @jwt_required()
+    def get(self, user_id):
+        user = User.query.filter_by(id = user_id).first()
+        if not user:
+            return {'message': 'User not found'}, 404
+
+
+        res = [s.subtopic.to_dict() for s in user.subtopic_preferences]
+        return res, 200
+
+    # # @jwt_required()
+    # def patch(self, user_id):
+    #     user = User.query.filter_by(id = user_id).first()
+    #     if not user:
+    #         return {'message': 'User not found'}, 404
+
+    #     preference_id = request.json.get('preference_id')
+    #     sp = UserSubtopicPreference.query.filter_by(id=preference_id).first()
+    #     if not sp:
+    #         return {"error": "Subtopic Preference not found"}, 404
+
+    #     data = request.get_json()
+    #     for key in data.keys():
+    #         setattr(sp, key, data[key])
+    #     db.session.add(sp)
+    #     db.session.commit()
+    #     return sp.to_dict(), 200
+
+
+
+api.add_resource(SubtopicsByUserId, '/users/<int:user_id>/subtopic_preferences')
+
+class SubtopicPreferencesByUserId(RestfulResource):
+    def get(self, user_id):
+        user = User.query.filter_by(id = user_id).first()
+        if not user:
+            return {'message': 'User not found'}, 404
+
+
+        # res = [s.to_dict(rules=('-subtopic',)) for s in user.subtopic_preferences]
+        res = [s.to_dict() for s in user.subtopic_preferences]
+        return res, 200
+api.add_resource(SubtopicPreferencesByUserId, '/users/<int:user_id>/subtopic_preferences_to_grade')
+
+class UserSubtopicByStId(RestfulResource):
+    def get(self, user_id, st_id):
+        subtopic = UserSubtopicPreference.query.filter_by(user_id=user_id, subtopic_id = st_id).first()
+        if not subtopic:
+            return {'message': 'Subtopic not found'}, 404
+
+        return subtopic.to_dict(), 200
+
+    def patch(self, user_id, st_id):
+        subtopic = UserSubtopicPreference.query.filter_by(user_id=user_id, subtopic_id=st_id).first()
+        if not subtopic:
+            return {"error": "Subtopic Preference not found"}, 404
+        data = request.get_json()
+        for key in data.keys():
+            setattr(subtopic, key, data[key])
+        db.session.add(subtopic)
+        db.session.commit()
+        return subtopic.to_dict(), 200
+
+    @jwt_required()
+    # @admin_required
+    def delete(self, user_id, st_id):
+        subtopic = UserSubtopicPreference.query.filter_by(user_id=user_id, subtopic_id=st_id).first()
+        if not subtopic:
+            return {"error": "Subtopic Preference not found"}, 404
+        db.session.delete(subtopic)
+        db.session.commit()
+        return {"result": "Subtopic Preference deleted"}, 204
+
+api.add_resource(UserSubtopicByStId, '/users/<int:user_id>/subtopic_preferences/<int:st_id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
