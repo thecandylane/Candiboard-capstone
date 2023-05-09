@@ -105,7 +105,7 @@ def login():
     if check_password_hash(user.password, password):
         # access_token = create_access_token(identity=user.public_id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
 
-        access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30 ), additional_claims={"is_admin": user.admin})
+        access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30), additional_claims={"is_admin": user.admin})
         user_data = user.to_dict()
         user_data['access_token'] = access_token
         response = make_response(jsonify({'message': 'Logged in successfully', 'user': user_data}), 200)

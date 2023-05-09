@@ -25,6 +25,7 @@ const TopicView = ({}) => {
               key={st.id}
               id={st.id}
               name={st.name}
+              description={st.description}
               // selected={selected}
             />
           </div>
@@ -40,17 +41,20 @@ const TopicView = ({}) => {
 
 
     return (
-        <div>
-            <h1>Selected Topic: {data ? data.name : "Loading..."}</h1>
-            <button className=" text-blue-500" onClick={navigateToHome}>Back to Home</button>
-            <h2>
-                Choose a subtopic: 
-            </h2>
-            <div className="flex flex-wrap justify-center">
-              {subtopicsToRender}
-            </div>
-        </div>
-    )
-}
+      <div className="container mx-auto px-4 py-6">
+      <h1 className="text-3xl font-bold mb-4">
+        Selected Topic: {data ? data.name : "Loading..."}
+      </h1>
+      <button
+        className="bg-white text-blue-500 font-semibold my-1 py-1 px-2 rounded shadow hover:bg-blue-600 hover:text-white"
+        onClick={navigateToHome}
+      >
+        Back to Home
+      </button>
+      <h2 className="text-2xl font-semibold mb-4">Choose a subtopic:</h2>
+      <div className="flex flex-wrap justify-center">{subtopicsToRender}</div>
+    </div>
+  );
+};
 
 export default TopicView

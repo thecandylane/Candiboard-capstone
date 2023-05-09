@@ -47,14 +47,23 @@ const SubtopicGrading = () => {
         })
 
         return (
-            <div>
-                <h1>Grade your Subtopics:</h1>
-                <button className=" bg-blue-400" onClick={handleHome}>Go back to Topics</button>
-                {gradingSubs}
-                <button onClick={() => navigate('/matching-page')}>Calculate which candidates are for you</button>
-
+            <div className="container mx-auto px-4 py-6">
+              <h1 className="text-3xl font-bold mb-4">Grade your Subtopics:</h1>
+              <button
+                className="bg-blue-400 text-white font-semibold py-2 px-4 rounded-md shadow-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 mb-4"
+                onClick={handleHome}
+              >
+                Go back to Topics
+              </button>
+              <div className="mb-4">{gradingSubs}</div>
+              <button
+                className="bg-green-400 text-white font-semibold py-2 px-4 rounded-md shadow-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-opacity-50"
+                onClick={() => navigate('/matching-page')}
+              >
+                Calculate which candidates are for you
+              </button>
             </div>
-        )
+          );
     }
 
     export default SubtopicGrading

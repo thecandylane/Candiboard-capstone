@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import useUser from "../hooks/useUser";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import UserContext from "../context/UserContext";
 
-function SubTopic({ id, name, selectedId}) {
+function SubTopic({ id, name, selectedId, description}) {
+  const [showDescription, setShowDescription] = useState(false)
   const { user } = useUser();
   const { getAuthHeaders } = useContext(UserContext);
   const navigate = useNavigate();
@@ -36,15 +37,17 @@ function SubTopic({ id, name, selectedId}) {
     navigate("/home", {state: {chosenID: selectedId}});
   };
 
-  console.log(selectedId)
+  const handleLearnMoreClick = () => {
+    setShowDescription(!showDescription)
+  }
 
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-col items-center m-4">
       <div className={subTopicBaseClass}>
-        <h1>{name}</h1>
+        <h1 className="text-white font-semibold">{name}</h1>
         <button
-          className="bg-white text-blue-500 font-semibold py-1 px-2 rounded shadow hover:bg-blue-600 hover:text-white"
-          onClick={() => console.log("Learn more clicked")}
+          className="bg-white text-blue-500 font-semibold my-1 py-1 px-2 rounded shadow hover:bg-blue-600 hover:text-white"
+          onClick={handleLearnMoreClick}
         >
           Learn more!
         </button>
@@ -55,8 +58,14 @@ function SubTopic({ id, name, selectedId}) {
           I agree
         </button>
       </div>
+      {showDescription && (
+        <div className="bg-white p-4 mt-2 w-64 rounded-md shadow-md">
+          <p className="text-gray-800">{description}</p>
+        </div>
+      )}
     </div>
   );
 }
+
 
 export default SubTopic;

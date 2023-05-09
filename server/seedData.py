@@ -146,7 +146,7 @@ topics_data = {
             ]
         },
         {
-            'name': 'Public investment approach',
+            'name': 'Public-investment approach',
             'description': 'Promotes increased funding for public schools and programs to reduce student debt and make college more affordable.',
             'resources': [
                 {'type': 'Article', 'title': 'The Importance of Investing in Public Education', 'url': 'https://www.epi.org/publication/the-importance-of-public-investment-in-public-education/'},
@@ -347,13 +347,14 @@ topics_data = {
 candidates_data = [
     {
         'name':'Joe Biden',
-        'image_url':'',
+        'image_url':'https://th.bing.com/th/id/R.e8f0caa25c6c03a4c3161f82a3b6715a?rik=hJkGG3tcbkT9KA&pid=ImgRaw&r=0
+',
         'subtopics': {
             'Government intervention approach': 4,
             'Public option system': 5,
             'Regulation approach': 4,
             'Diplomacy approach': 4,
-            'Public investment approach': 4,
+            'Public-investment approach': 4,
             'Path to citizenship approach': 3,
             'Progressive approach': 4,
             'Public Investment approach': 4,
@@ -363,7 +364,8 @@ candidates_data = [
     },
     {
         'name':'Donald Trump',
-        'image_url':'',
+        'image_url':'https://s4.scoopwhoop.com/anj2/5f58a7a918ac81421988a5e8/df5306de-7fd2-4f57-b142-84586b93d802.jpg
+',
         'subtopics': {
             'Free market approach': 5,
             'Market-based system': 4,
@@ -380,7 +382,7 @@ candidates_data = [
     },
     {
         'name':'Jo Jorgensen',
-        'image_url':'',
+        'image_url':'https://plungedindebt.com/wp-content/uploads/2020/10/50448829877_b8117d1fbc_k-scaled.jpg',
         'subtopics': {
             'Free market approach': 5,
             'Market-based system': 5,
@@ -396,13 +398,13 @@ candidates_data = [
     },
     {
         'name':'Howie Hawkins',
-        'image_url':'',
+        'image_url':'https://th.bing.com/th/id/OIP.Sb1nKQ4Gf7aldFVogTA2LQHaGN?pid=ImgDet&rs=1',
         'subtopics': {
             'Progressive approach ': 5,
             'Single-payer system': 5,
             'Regulation approach': 4,
             'Diplomacy approach': 4,
-            'Public investment approach': 5,
+            'Public-investment approach': 5,
             'Path to citizenship approach': 4,
             'Progressive approach': 5,
             'Public Investment approach': 5,
@@ -412,7 +414,7 @@ candidates_data = [
     },
     {
         'name':'Don Blankenship',
-        'image_url':'',
+        'image_url':'https://th.bing.com/th/id/R.6a2993630ee2d2ec080da4ec87143633?rik=n9ZXSmJQPYyFtg&pid=ImgRaw&r=0',
         'subtopics': {
             'Free market approach': 5,
             'Market-based system': 4,
@@ -428,7 +430,7 @@ candidates_data = [
     },
     {
         'name':'Brock Pierce',
-        'image_url':'',
+        'image_url':'https://th.bing.com/th/id/R.8ae1533e0c96e3faafd223ef568e8ce5?rik=TGdWbX1rTvl7Hg&pid=ImgRaw&r=0',
         'subtopics': {
             'Free market approach': 5,
             'Hybrid system': 4,
@@ -440,6 +442,38 @@ candidates_data = [
             'Innovation-focused approach': 5,
             'Consumption tax approach': 3,
             'Efficiency-focused approach': 4
+        }
+    },
+    {
+        'name':'Kanye West',
+        'image_url':'https://i0.wp.com/pagesix.com/wp-content/uploads/sites/3/2018/10/kanye-west2.jpg?quality=90&strip=all&ssl=1',
+        'subtopics': {
+            'Free market approach':1,
+            'Hybrid system':5,
+            'Technology approach': 4,
+            'Diplomacy approach':4,
+            'Technology-focused approach':4,
+            'Path to citizenship approach':3,
+            'Libertarian approach':3,
+            'Public Investment approach':5,
+            'Flat tax approach':1,
+            'Anti-corruption approach':5
+        }
+    },
+    {
+        'name':'Bernie Sanders',
+        'image_url':'https://www.truthdig.com/wp-content/uploads/2019/12/48023025606_a83eba4453_k-1024x683.jpg',
+        'subtopics': {
+            'Labor-focused approach':5,
+            'Single-payer system':5,
+            'Regulation approach':4,
+            'Diplomacy approach':4,
+            'Public-investment approach':5,
+            'Path to citizenship approach':4,
+            'Progressive approach':4,
+            'Public Investment approach':3,
+            'Progressive Taxation approach':4,
+            'Anti-corruption approach':2,
         }
     }
 

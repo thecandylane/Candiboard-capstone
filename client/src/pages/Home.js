@@ -26,12 +26,12 @@ const Home = () => {
           })
           .then(data => {
             setChosenSubs(data)
-            console.log(data)
+            // console.log(data)
     })
   }
   fetchSubs()
   }, [])
-  console.log(chosenSubs)
+  // console.log(chosenSubs)
 
   const isTopicChosen = useMemo(() => {
     return (topicId) => {
@@ -101,26 +101,39 @@ const Home = () => {
   )
 
   return (
-    <div>
-      <h1>Please choose choose your subtopic preferences {user.username}</h1>
-      <ol>
-        <li>{user.username}</li>
-        <li>{user.email}</li>
-        <li>{user.admin}</li>
+    <div className="container mx-auto px-4 py-6">
+    <h1 className="text-3xl font-bold mb-4">
+      Please choose your subtopic preferences, {user.username}
+    </h1>
+    <div className="bg-white p-4 rounded-md shadow-md mb-6">
+      <ol className="list-decimal list-inside">
+        <li className="text-gray-800">Username: {user.username}</li>
+        <li className="text-gray-800">Email: {user.email}</li>
+        <li className="text-gray-800">Admin: {user.admin ? 'Yes' : 'No'}</li>
       </ol>
-      <div>
-        {topics.length > 0 ? topicsToRender : 'No topics found'}
-        {chosenSubs.length >= 4 ? (
+    </div>
+    <div>
+      {topics.length > 0 ? (
+        <div className="mb-4">{topicsToRender}</div>
+      ) : (
+        <p className="text-gray-600">No topics found</p>
+      )}
+      {chosenSubs.length >= 4 ? (
         <button
           onClick={handleManageSubtopics}
-          className="bg-red-400 flex justify-center"
+          className="bg-red-400 text-white font-semibold py-2 px-4 rounded-md shadow-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-opacity-50"
         >
           Click to manage subtopics
         </button>
       ) : null}
-      </div>
     </div>
-  )
+  </div>
+);
 }
 
 export default Home
+
+
+
+
+
