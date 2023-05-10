@@ -578,14 +578,14 @@ api.add_resource(SubtopicPreferences, '/subtopic-preferences')
 
 class SubtopicPreferenceById(RestfulResource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, id):
         sp = UserSubtopicPreference.query.filter_by(subtopic_id=id).first()
         if not sp:
             return {"error":"Subtopic Preference not found"}, 404
         return sp.to_dict(), 200
 
-    @jwt_required()
+    # @jwt_required()
     # @admin_required
     def patch(self, id):
         sp = UserSubtopicPreference.query.filter_by(id=id).first()
@@ -598,7 +598,7 @@ class SubtopicPreferenceById(RestfulResource):
         db.session.commit()
         return sp.to_dict(), 200
 
-    @jwt_required()
+    # @jwt_required()
     # @admin_required
     def delete(self, id):   
         sp = UserSubtopicPreference.query.filter_by(id=id).first()
@@ -625,23 +625,29 @@ class SubtopicsByUserId(RestfulResource):
         res = [s.subtopic.to_dict() for s in user.subtopic_preferences]
         return res, 200
 
-    # # @jwt_required()
-    # def patch(self, user_id):
-    #     user = User.query.filter_by(id = user_id).first()
-    #     if not user:
-    #         return {'message': 'User not found'}, 404
+    # @jwt_required()
+    def patch(self, user_id):
+        user = User.query.filter_by(id = user_id).first()
+        if not user:
+            return {'message': 'User not found'}, 404
 
-    #     preference_id = request.json.get('preference_id')
-    #     sp = UserSubtopicPreference.query.filter_by(id=preference_id).first()
-    #     if not sp:
-    #         return {"error": "Subtopic Preference not found"}, 404
+        preference_id = request.json.get('preference_id')
+        sp = UserSubtopicPreference.query.filter_by(id=preference_id).first()
+        if not sp:
+            return {"error": "Subtopic Preference not found"}, 404
 
-    #     data = request.get_json()
-    #     for key in data.keys():
-    #         setattr(sp, key, data[key])
-    #     db.session.add(sp)
-    #     db.session.commit()
-    #     return sp.to_dict(), 200
+        data = request.get_json()
+        for key in data.keys():
+            setattr(sp, key, data[key])
+        db.session.add(sp)
+        db.session.commit()     
+        return sp.to_dict(), 200
+    
+    def post(self, user_id):
+        print(request.get_json())
+        data = request.get_json()
+        subtopic_id = data['subtopic_id']
+        return add_subtopic_preference(user_id, subtopic_id)
 
 
 
@@ -678,7 +684,7 @@ class UserSubtopicByStId(RestfulResource):
         db.session.commit()
         return subtopic.to_dict(), 200
 
-    @jwt_required()
+    # @jwt_required()
     # @admin_required
     def delete(self, user_id, st_id):
         subtopic = UserSubtopicPreference.query.filter_by(user_id=user_id, subtopic_id=st_id).first()

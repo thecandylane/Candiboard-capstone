@@ -113,60 +113,188 @@ const AdminPage = () => {
         }
     }
 
-    const renderSelectedUserTable = () => {
 
+    const updateSubtopicPriority = async (userId, subtopicId, newPriority) => {
+        const headers = await getAuthHeaders()
+        try {
+            const response = await fetch(`/users/${userId}/subtopic_preferences/${subtopicId}`, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify({ priority: newPriority }),
+            });
+
+            if (response.ok) {
+                // Update local state to reflect the new priority
+                setSelectedUser(prevUser => ({
+                    ...prevUser,
+                    subtopic_preferences: prevUser.subtopic_preferences.map(pref =>
+                        pref.subtopic_id === subtopicId ? { ...pref, priority: newPriority } : pref
+                    ),
+                }));
+            } else {
+                console.error('Error updating subtopic priority:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error updating subtopic priority:', error);
+        }
+    };
+    const deleteSubtopicPreference = async (userId, subtopicId) => {
+        const headers = await getAuthHeaders();
+        try {
+            const response = await fetch(`/users/${userId}/subtopic_preferences/${subtopicId}`, {
+                method: 'DELETE',
+                headers: headers,
+            });
+
+            if (response.ok) {
+                setSelectedUser(prevUser => ({
+                    ...prevUser,
+                    subtopic_preferences: prevUser.subtopic_preferences.filter(pref => pref.subtopic_id !== subtopicId),
+                }));
+            } else {
+                console.error('Error deleting subtopic preference:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error deleting subtopic preference:', error);
+        }
+    };
+
+    const createSubtopicPreference = async (userId, subtopicId) => {
+        const headers = await getAuthHeaders();
+        try {
+            const response = await fetch(`/users/${userId}/subtopic_preferences`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ subtopic_id: subtopicId }),
+            });
+
+            if (response.ok) {
+                const newPref = await response.json();
+                setSelectedUser(prevUser => ({
+                    ...prevUser,
+                    subtopic_preferences: [...prevUser.subtopic_preferences, newPref],
+                }));
+            } else {
+                console.error('Error creating subtopic preference:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error creating subtopic preference:', error);
+        }
+    };
+
+
+
+
+    const [inputValues, setInputValues] = useState({});
+
+    const renderSelectedUserTable = () => {
         if (selectedUser) {
             return (
                 <>
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
-                    onClick={() => {
-                        setSelectedUser(null);
-                        setShowUserList(true);
-                    }}
-                >
-                    Back to User List
-                </button>
-                <table className="table-auto border-collapse border border-gray-300 mt-4">
-                    <thead>
-                        <tr>
-                            <th className="border border-gray-300 p-2">Topic ID</th>
-                            <th className="border border-gray-300 p-2">Subtopics</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {topics.map(topic => {
-                            const userSubtopics = selectedUser.subtopic_preferences
-                                .filter(pref => pref.subtopic.topic_id === topic.id)
-                                .map(pref => pref.subtopic_id);
-                            return (
-                                <tr key={topic.id}>
-                                    <td className="border border-gray-300 p-2">{topic.id}</td>
-                                    <td className="border border-gray-300 p-2">
-                                        {topic.subtopics.map(subtopic => (
-                                            <span
-                                                key={subtopic.id}
-                                                className={`inline-block m-1 p-1 rounded ${
-                                                    userSubtopics.includes(subtopic.id)
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+                        onClick={() => {
+                            setSelectedUser(null);
+                            setShowUserList(true);
+                        }}
+                    >
+                        Back to User List
+                    </button>
+                    <table className="table-auto border-collapse border border-gray-300 mt-4">
+                        <thead>
+                            <tr>
+                                <th className="border border-gray-300 p-2">Topic ID</th>
+                                <th className="border border-gray-300 p-2">Subtopics</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {topics.map(topic => {
+                                const userSubtopics = selectedUser.subtopic_preferences
+                                    .filter(pref => pref.subtopic.topic_id === topic.id)
+                                    .map(pref => ({ subtopic_id: pref.subtopic_id, priority: pref.priority }));
+
+                                return (
+                                    <tr key={topic.id}>
+                                        <td className="border border-gray-300 p-2">{topic.id}</td>
+                                        {topic.subtopics.map(subtopic => {
+                                            // setInputValue(subtopic.priority)
+                                            const userSubtopic = userSubtopics.find(
+                                                us => us.subtopic_id === subtopic.id
+                                            );
+                                            return (
+                                                <td
+                                                    key={subtopic.id}
+                                                    className={`border border-gray-300 p-2 ${userSubtopic
                                                         ? 'bg-blue-500 text-white'
                                                         : 'bg-gray-200'
-                                                }`}
-                                            >
-                                                {subtopic.name}
-                                            </span>
-                                        ))}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                                        }`}
+                                                    onClick={() => {
+                                                        if (userSubtopic) {
+                                                            // If this subtopic is already selected, update its priority
+                                                            updateSubtopicPriority(selectedUser.id, subtopic.id, 1);
+                                                        } else {
+                                                            // If this subtopic is not selected, delete the previous preference and create a new one
+                                                            const prevSubtopicId = selectedUser.subtopic_preferences.find(pref => pref.subtopic.topic_id === topic.id)?.subtopic_id;
+                                                            if (prevSubtopicId) {
+                                                                deleteSubtopicPreference(selectedUser.id, prevSubtopicId);
+                                                            }
+                                                            createSubtopicPreference(selectedUser.id, subtopic.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    {subtopic.name}
+                                                    {userSubtopic && (
+                                                        <>
+                                                            {/* <span className="ml-2">
+                                                                Priority: {userSubtopic.priority}
+                                                            </span> */}
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                max="10"
+                                                                className="ml-2 w-15 text-black"
+                                                                value={inputValues[subtopic.id] || userSubtopic.priority} // Default to the user's priority if no input value is present
+                                                                onChange={e =>
+                                                                    setInputValues(prevValues => ({
+                                                                        ...prevValues,
+                                                                        [subtopic.id]: e.target.value
+                                                                    }))
+                                                                }
+                                                                onBlur={() => {
+                                                                    if (inputValues[subtopic.id]) { // Only update if a new value was entered
+                                                                        updateSubtopicPriority(
+                                                                            selectedUser.id,
+                                                                            subtopic.id,
+                                                                            parseInt(inputValues[subtopic.id])
+                                                                        );
+                                                                    }
+                                                                }}
+                                                                onKeyDown={e => {
+                                                                    if (e.key === 'Enter' && inputValues[subtopic.id]) { // Only update if 'Enter' was pressed and a new value was entered
+                                                                        updateSubtopicPriority(
+                                                                            selectedUser.id,
+                                                                            subtopic.id,
+                                                                            parseInt(inputValues[subtopic.id])
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            />
+
+                                                        </>
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </>
             );
         }
         return null;
     };
-    
 
 
     return (
@@ -196,20 +324,20 @@ const AdminPage = () => {
             {(activeDiv === "users" || activeDiv === 'candidates') && !loading && (
                 <>
                     {showUserList &&
-                    bigAdminData.map(item => {
-                        return (
-                            <div
-                                key={item.id}
-                                className="bg-blue-300 p-2 m-2 cursor-pointer"
-                                onClick={() => {
-                                    setSelectedUser(item)
-                                    setShowUserList(false)
-                                }}
-                            >
-                                <p>{activeDiv === 'users' ? item.username : item.name}</p>
-                            </div>
-                        );
-                    })}
+                        bigAdminData.map(item => {
+                            return (
+                                <div
+                                    key={item.id}
+                                    className="bg-blue-300 p-2 m-2 cursor-pointer"
+                                    onClick={() => {
+                                        setSelectedUser(item)
+                                        setShowUserList(false)
+                                    }}
+                                >
+                                    <p>{activeDiv === 'users' ? item.username : item.name}</p>
+                                </div>
+                            );
+                        })}
                     {renderSelectedUserTable()}
                 </>
             )}
@@ -300,7 +428,59 @@ export default AdminPage;
 //                                         <th className="border border-gray-300 px-4 py-2">Subtopics</th>
 //                                         <th className="border border-gray-300 px-4 py-2">Image URL</th>
 //                                     </>
+    // const renderSelectedUserTable = () => {
 
+    //     if (selectedUser) {
+    //         return (
+    //             <>
+    //             <button
+    //                 className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+    //                 onClick={() => {
+    //                     setSelectedUser(null);
+    //                     setShowUserList(true);
+    //                 }}
+    //             >
+    //                 Back to User List
+    //             </button>
+    //             <table className="table-auto border-collapse border border-gray-300 mt-4">
+    //                 <thead>
+    //                     <tr>
+    //                         <th className="border border-gray-300 p-2">Topic ID</th>
+    //                         <th className="border border-gray-300 p-2">Subtopics</th>
+    //                     </tr>
+    //                 </thead>
+    //                 <tbody>
+    //                     {topics.map(topic => {
+    //                         const userSubtopics = selectedUser.subtopic_preferences
+    //                             .filter(pref => pref.subtopic.topic_id === topic.id)
+    //                             .map(pref => pref.subtopic_id);
+    //                         return (
+    //                             <tr key={topic.id}>
+    //                                 <td className="border border-gray-300 p-2">{topic.id}</td>
+    //                                 <td className="border border-gray-300 p-2">
+    //                                     {topic.subtopics.map(subtopic => (
+    //                                         <span
+    //                                             key={subtopic.id}
+    //                                             className={`inline-block m-1 p-1 rounded ${
+    //                                                 userSubtopics.includes(subtopic.id)
+    //                                                     ? 'bg-blue-500 text-white'
+    //                                                     : 'bg-gray-200'
+    //                                             }`}
+    //                                         >
+    //                                             {subtopic.name}
+    //                                         </span>
+    //                                     ))}
+    //                                 </td>
+    //                             </tr>
+    //                         );
+    //                     })}
+    //                 </tbody>
+    //             </table>
+    //             </>
+    //         );
+    //     }
+    //     return null;
+    // };
 
 
 

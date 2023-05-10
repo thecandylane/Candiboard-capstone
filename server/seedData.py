@@ -347,8 +347,7 @@ topics_data = {
 candidates_data = [
     {
         'name':'Joe Biden',
-        'image_url':'https://th.bing.com/th/id/R.e8f0caa25c6c03a4c3161f82a3b6715a?rik=hJkGG3tcbkT9KA&pid=ImgRaw&r=0
-',
+        'image_url':'https://th.bing.com/th/id/R.e8f0caa25c6c03a4c3161f82a3b6715a?rik=hJkGG3tcbkT9KA&pid=ImgRaw&r=0',
         'subtopics': {
             'Government intervention approach': 4,
             'Public option system': 5,
@@ -364,8 +363,7 @@ candidates_data = [
     },
     {
         'name':'Donald Trump',
-        'image_url':'https://s4.scoopwhoop.com/anj2/5f58a7a918ac81421988a5e8/df5306de-7fd2-4f57-b142-84586b93d802.jpg
-',
+        'image_url':'https://s4.scoopwhoop.com/anj2/5f58a7a918ac81421988a5e8/df5306de-7fd2-4f57-b142-84586b93d802.jpg',
         'subtopics': {
             'Free market approach': 5,
             'Market-based system': 4,
