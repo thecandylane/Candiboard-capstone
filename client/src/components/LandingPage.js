@@ -51,7 +51,7 @@ const LandingPage = () => {
     // }
 
     return (
-        <div>
+        <div className="bg-gray-300">
           <h1 className='text-center'>Welcome to Candiboard</h1>
             <h2 className='text-center'>please Log in or Sign up for a free account!</h2>
             <Login setEmail={setEmail} email={email} password={password} setPassword={setPassword} handleLogin={handleLogin}/>

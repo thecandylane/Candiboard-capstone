@@ -3,7 +3,7 @@ import useUser from "../hooks/useUser";
 import { useContext, useState } from "react";
 import UserContext from "../context/UserContext";
 
-function SubTopic({ id, name, selectedId, description}) {
+function SubTopic({ id, name, selectedId, description, resources}) {
   const [showDescription, setShowDescription] = useState(false)
   const { user } = useUser();
   const { getAuthHeaders } = useContext(UserContext);
@@ -61,6 +61,11 @@ function SubTopic({ id, name, selectedId, description}) {
       {showDescription && (
         <div className="bg-white p-4 mt-2 w-64 rounded-md shadow-md">
           <p className="text-gray-800">{description}</p>
+          {resources.map((resource) => (
+          <p className="text-base">Resource:
+            <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-blue-700 underline inline-block">{resource.title}</a>
+          </p>
+        ))}
         </div>
       )}
     </div>

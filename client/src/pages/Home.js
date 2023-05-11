@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, useMemo } from "react"
 import useUser from "../hooks/useUser"
-import Topic from "./Topic"
+import Topic from "../components/Topic"
 import { useNavigate, useLocation } from "react-router-dom"
 import UserContext from "../context/UserContext"
 
@@ -101,7 +101,7 @@ const Home = () => {
   )
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="bg-gray-300 container mx-auto px-4 py-6">
     <h1 className="text-3xl font-bold mb-4">
       Please choose your subtopic preferences, {user.username}
     </h1>

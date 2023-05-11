@@ -42,12 +42,12 @@ const SubtopicGrading = () => {
             console.log(s)
 
             return (
-                <SCard key={s.id} id={s.id} length={length} name={s.name} description={s.description}/>
+                <SCard key={s.id} id={s.id} length={length} name={s.name} description={s.description} resources={s.resources}/>
             )
         })
 
         return (
-            <div className="container mx-auto px-4 py-6">
+            <div className="bg-gray-300 container mx-auto px-4 py-6">
               <h1 className="text-3xl font-bold mb-4">Grade your Subtopics:</h1>
               <button
                 className="bg-blue-400 text-white font-semibold py-2 px-4 rounded-md shadow-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 mb-4"

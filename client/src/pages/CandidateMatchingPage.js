@@ -1,11 +1,13 @@
 import { useContext, useEffect, useState } from "react"
 import UserContext from "../context/UserContext"
 import { find_closest_candidate } from "./utils"
+import { useNavigate } from "react-router-dom";
 
 const MatchingPage = () => {
     const { getAuthHeaders, user, setUser } = useContext(UserContext);
     // const [userSubtopicPreferences, setUserSubtopicPreferences] = useState([]);
     const [candidates, setCandidates] = useState([]);
+    const navigate = useNavigate()
     useEffect(() => {
         const get = async() => {
             const headers = await getAuthHeaders()
@@ -128,12 +130,26 @@ const MatchingPage = () => {
         );
       });
 
+    const deleteSubtopicPreferences = async(id) => {
+        const headers = await getAuthHeaders()
+        fetch(`users/${id}/subtopic_preferences`, {
+            method: "DELETE",
+            headers: headers,
+        })
+        .then(r => r.json())
+        .then(data => {
+            navigate('/home')
+            console.log(data)
+        })
+    }
+
     return (
         <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-6">Your Candidates:</h1>
         <div className="candidate-cards-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {candidateCards}
         </div>
+        <button onClick={() => deleteSubtopicPreferences(user.id)}>Re-choose your picks</button>
       </div>
     );
 }

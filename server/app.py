@@ -649,6 +649,20 @@ class SubtopicsByUserId(RestfulResource):
         subtopic_id = data['subtopic_id']
         return add_subtopic_preference(user_id, subtopic_id)
 
+    # @jwt_required()
+    def delete(self, user_id):
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return {'message': 'User not found'}, 404
+
+        preferences = UserSubtopicPreference.query.filter_by(user_id=user_id).all()
+        if not preferences:
+            return {"error": "No Subtopic Preferences found for the user"}, 404
+
+        for sp in preferences:
+            db.session.delete(sp)
+        db.session.commit()     
+        return {'message': 'All Subtopic Preferences for the user deleted'}, 200
 
 
 api.add_resource(SubtopicsByUserId, '/users/<int:user_id>/subtopic_preferences')

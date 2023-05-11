@@ -17,6 +17,8 @@ const AdminPage = () => {
     const [inputValues, setInputValues] = useState({});
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
+        candidateName: '',
+        candidateImage_Url: '',
         topicName: '',
         subtopicName: '',
         subtopicTopicId: '',
@@ -129,6 +131,24 @@ const AdminPage = () => {
     /*
     CANDIDATE TABLE SHIT ---------------------------------------------------------------------
     */
+    const deleteCandidate = async (id) => {
+        const headers = await getAuthHeaders()
+        fetch(`/candidates/${id}`, {
+            method: "DELETE",
+            headers: headers,
+        })
+            .then(r => {
+                if (r.status === 204) {
+                    return Promise.resolve()
+                } else {
+                    return r.json()
+                }
+            })
+            .then(() => {
+                setBigAdminData(prevData => prevData.filter(candidate => candidate.id !== id))
+            })
+            .catch(err => console.error(err))
+    }
     const updateCandidateSubtopicWeight = async (candidateId, subtopicId, newWeight) => {
         const headers = await getAuthHeaders()
         try {
@@ -545,8 +565,28 @@ const AdminPage = () => {
 
 
     /*
-    FUNCTIONALITY FOR TOPICS, SUBTOPICS, AND RESOURCES? ------------------------------------------------------
+    FUNCTIONALITY FOR CANDIDATES, TOPICS, SUBTOPICS, AND RESOURCES? ------------------------------------------------------
     */
+    const addCandidate = async (name, url) => {
+        const headers = await getAuthHeaders()
+        fetch('/candidates', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ name: name, image_url: url })
+        })
+            .then(r => {
+                if (r.status === 204) {
+                    return Promise.resolve()
+                } else {
+                    return r.json()
+                }
+            })
+            .then((data) => {
+                setBigAdminData((prevData) => [...prevData, data])
+                setFormData({ ...formData, candidateName: '', candidateImage_Url: '' })
+                setShowForm(false)
+            })
+    }
     const addTopic = async (name) => {
         const headers = await getAuthHeaders()
         fetch('/topics', {
@@ -691,47 +731,30 @@ const AdminPage = () => {
                 </button>
             </div>
             {loading && <div>Loading...</div>}
-            {!loading && (
-                <>
-                    {activeDiv === 'users' && showUserList &&
-                        bigAdminData.map(item => {
-                            return (
-                                <div
-                                    key={item.id}
-                                    className="bg-blue-300 p-2 m-2 cursor-pointer"
-                                    onClick={() => {
-                                        setSelectedUser(item)
-                                        setShowUserList(false)
-                                    }}
-                                >
-                                    <p>{item.username}</p>
-                                </div>
-                            );
-                        })}
-                    {activeDiv === 'users' && renderSelectedUserTable()}
-
-                    {activeDiv === 'candidates' && showCandidateList &&
-                        bigAdminData.map(item => {
-                            return (
-                                <div
-                                    key={item.id}
-                                    className="bg-blue-300 p-2 m-2 cursor-pointer"
-                                    onClick={() => {
-                                        setSelectedCandidate(item)
-                                        setShowCandidateList(false)
-                                    }}
-                                >
-                                    <p>{item.name}</p>
-                                </div>
-                            );
-                        })}
-                    {activeDiv === 'candidates' && renderSelectedCandidateTable()}
-                </>
-            )}
             {activeDiv !== null &&
                 (<button className={style} onClick={() => setShowForm(!showForm)}>
                     Add {activeDiv}
                 </button>)}
+            {showForm && activeDiv === 'candidates' && (
+                <form onSubmit={(e) => {
+                    e.preventDefault()
+                    addCandidate(formData.candidateName, formData.candidateImage_Url)
+                }}>
+                    <input
+                        type="text"
+                        onChange={(e) => setFormData({ ...formData, candidateName: e.target.value })}
+                        value={formData.candidateName}
+                        placeholder="Enter candidate Name"
+                    />
+                    <input
+                        type="text"
+                        onChange={(e) => setFormData({ ...formData, candidateImage_Url: e.target.value })}
+                        value={formData.candidateImage_Url}
+                        placeholder="Enter candidate Image Url"
+                    />
+                    <button type="submit">Submit</button>
+                </form>
+            )}
             {showForm && activeDiv === 'topics' && (
                 <form onSubmit={(e) => {
                     e.preventDefault();
@@ -804,6 +827,53 @@ const AdminPage = () => {
                     />
                     <button type="submit">Submit</button>
                 </form>
+            )}
+            {!loading && (
+                <>
+                    {activeDiv === 'users' && showUserList &&
+                        bigAdminData.map(item => {
+                            return (
+                                <div
+                                    key={item.id}
+                                    className="bg-blue-300 p-2 m-2 cursor-pointer"
+                                    onClick={() => {
+                                        setSelectedUser(item)
+                                        setShowUserList(false)
+                                    }}
+                                >
+                                    <p>{item.username}</p>
+                                </div>
+                            );
+                        })}
+                    {activeDiv === 'users' && renderSelectedUserTable()}
+
+                    {activeDiv === 'candidates' && showCandidateList &&
+                        bigAdminData.map(item => {
+                            return (
+                                <div key={item.id} className="flex items-center bg-blue-300 p-2 m-2 cursor-pointer">
+                                    <div
+                                        onClick={() => {
+                                            setSelectedCandidate(item)
+                                            setShowCandidateList(false)
+                                        }}
+                                    >
+                                        <p>{item.name}</p>
+                                    </div>
+                                    <button
+                                        className="bg-red-400 py-2 ml-2 text-white"
+                                        onClick={e => {
+                                            e.stopPropagation(); // prevent triggering onClick of parent
+                                            deleteCandidate(item.id)
+                                        }}
+                                    >
+                                        x
+                                    </button>
+                                </div>
+                            );
+                        })
+                    }
+                    {activeDiv === 'candidates' && renderSelectedCandidateTable()}
+                </>
             )}
 
 

@@ -17,6 +17,7 @@ const TopicView = ({}) => {
     
     const subtopicsToRender = data ? 
      data.subtopics.map((st) => {
+      console.log(st)
         return (
           <div className="flex flex-row">
 
@@ -27,6 +28,7 @@ const TopicView = ({}) => {
               name={st.name}
               description={st.description}
               // selected={selected}
+              resources={st.resources}
             />
           </div>
         );
@@ -41,7 +43,7 @@ const TopicView = ({}) => {
 
 
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="bg-gray-300 container mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-4">
         Selected Topic: {data ? data.name : "Loading..."}
       </h1>
