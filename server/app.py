@@ -696,6 +696,81 @@ class UserSubtopicByStId(RestfulResource):
 
 api.add_resource(UserSubtopicByStId, '/users/<int:user_id>/subtopic_preferences/<int:st_id>')
 
+class SubtopicsByCandidateId(RestfulResource):
+    # @jwt_required()
+    def get(self, can_id):
+        can = Candidate.query.filter_by(id = can_id).first()
+        if not can:
+            return {'message': 'Candidate not found'}, 404
+
+
+        res = [s.subtopic.to_dict(rules=('-resources',)) for s in can.candidate_subtopics]
+        return res, 200
+
+    # @jwt_required()
+    # def patch(self, can_id):
+    #     can = Candidate.query.filter_by(id = can_id).first()
+    #     if not can:
+    #         return {'message': 'Candidat not found'}, 404
+
+    #     preference_id = request.json.get('preference_id')
+    #     sp = UserSubtopicPreference.query.filter_by(id=preference_id).first()
+    #     if not sp:
+    #         return {"error": "Subtopic Preference not found"}, 404
+
+    #     data = request.get_json()
+    #     for key in data.keys():
+    #         setattr(sp, key, data[key])
+    #     db.session.add(sp)
+    #     db.session.commit()     
+    #     return sp.to_dict(), 200
+    
+    def post(self, can_id):
+        data = request.get_json()
+        try:
+            cs = CandidateSubtopic(
+            candidate_id=data['candidate_id'],
+            subtopic_id=data['subtopic_id'],
+            weight=data['weight']
+            )
+            db.session.add(cs)
+            db.session.commit()
+        except Exception as e:
+            return make_response({
+                'errors':[e.__str__()]
+            }, 422)
+        return cs.to_dict(), 201
+        
+        #fix this route
+api.add_resource(SubtopicsByCandidateId, '/candidates/<int:can_id>/candidate_subtopics')
+
+class CandidateSubtopicbyCsID(RestfulResource):
+    def get(self, can_id, s_id):
+        cs = CandidateSubtopic.query.filter_by(subtopic_id=s_id, candidate_id=can_id).first()
+        if not cs:
+            return {'message': 'Candidate Subtopic not found'}, 404
+        return cs.to_dict(), 200
+    
+    def patch(self, can_id, s_id):
+        cs = CandidateSubtopic.query.filter_by(subtopic_id=s_id, candidate_id=can_id).first()
+        if not cs:
+            return {"error": "Candidate Subtopic not found"}, 404
+        data = request.get_json()
+        for key in data.keys():
+            setattr(subtopic, key, data[key])
+        db.session.add(cs)
+        db.session.commit()
+        return cs.to_dict(), 200
+    
+    def delete(self, can_id, s_id):
+        cs = CandidateSubtopic.query.filter_by(subtopic_id=s_id, candidate_id=can_id).first()
+        if not cs:
+            return {"error": "Candidate Subtopic not found"}, 404
+        db.session.delete(cs)
+        db.session.commit()
+        return {"message": "Candidate Subtopic deleted"}, 200
+
+api.add_resource(CandidateSubtopicbyCsID, '/candidates/<int:can_id>/candidate_subtopics/<int:s_id>')
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
